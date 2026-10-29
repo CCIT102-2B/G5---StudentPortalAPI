@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal - Account</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body class="login-page">
+    <!-- ==================== LOGIN / CREATE ACCOUNT PAGE START ==================== -->
+    <main class="auth-shell">
+        <section class="auth-brand">
+            <div class="portal-logo large">SP</div>
+            <h1>Student Portal</h1>
+            <p>Offline campus portal</p>
+        </section>
+        <section class="auth-card">
+            <div class="auth-tabs">
+                <button id="loginTab" class="active">Login</button>
+                <button id="createTab">Create Account</button>
+            </div>
+            <form id="loginForm">
+                <h2>Welcome back</h2>
+                <label>Student Number<input id="loginStudentId" required></label>
+                <label>Password<input id="loginPassword" type="password" required></label>
+                <button class="primary" type="submit">Login</button>
+            </form>
+            <form id="createForm" class="hidden">
+                <h2>Create student account</h2>
+                <div class="form-grid">
+                    <label>Student Number<input id="studentId" required></label>
+                    <label>Email<input id="email" type="email" required></label>
+                    <label>First Name<input id="firstName" required></label>
+                    <label>Middle Name<input id="middleName"></label>
+                    <label>Last Name<input id="lastName" required></label>
+                    <label>Program<input id="program" required></label>
+                    <label>Year Level<input id="yearLevel" required></label>
+                    <label>Password<input id="password" type="password" minlength="6" required></label>
+                </div>
+                <button class="primary" type="submit">Create Account</button>
+            </form>
+            <p id="message" class="message"></p>
+        </section>
+    </main>
+    <!-- ==================== LOGIN / CREATE ACCOUNT PAGE END ====================== -->
+    <script src="login.js"></script>
+</body>
+</html>

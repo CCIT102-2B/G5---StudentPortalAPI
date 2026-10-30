@@ -10,9 +10,49 @@
 .dashboard-grid{display:grid;grid-template-columns:360px 1fr;gap:25px;margin-top:18px}.profile-card{border:1px solid #e1e4e8;background:#f4f6f9;overflow:hidden;position:relative;min-height:405px}.campus-photo{height:155px;background:linear-gradient(135deg,#1686ca,#83b6d2 55%,#e5bd79);display:grid;place-items:center}.campus-placeholder{font-weight:800;letter-spacing:4px;color:#fff;text-shadow:0 1px 3px #333}.profile-avatar{position:absolute;top:125px;left:50%;transform:translateX(-50%);width:100px;height:100px;border-radius:50%;background:#d5d7dc;border:8px solid #f4f6f9;display:grid;place-items:center;font-size:34px;font-weight:700;color:#fff}.profile-copy{text-align:center;padding:68px 24px 24px;display:flex;flex-direction:column;gap:8px}.profile-copy h2{margin:0;font-size:19px}.profile-copy p{margin:0;font-size:13px;line-height:1.5}.profile-copy strong{margin-top:8px;font-size:13px}.profile-copy span{font-size:12px;color:#626b80}.dashboard-actions{display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));align-content:start;gap:15px;padding-top:16px}.dashboard-tile{position:relative;border:0;border-radius:4px;background:#20beb9;color:#fff;text-align:left;min-height:76px;padding:15px 65px 15px 17px;cursor:pointer;box-shadow:0 3px 8px #00000012}.dashboard-tile strong,.dashboard-tile span{display:block}.dashboard-tile strong{font-size:17px}.dashboard-tile span{font-size:13px;margin-top:3px}.dashboard-tile b{position:absolute;right:18px;top:17px;font-size:32px}.muted-tile{opacity:.72;cursor:default}
 /* ==================== FEATURE 01: STUDENT INFO CSS END ==================== */
 
-/* ==================== FEATURE 02: TRANSACTIONS CSS START ================== */
-.transaction-form{display:grid;grid-template-columns:2fr 1fr 1.2fr 1.2fr;gap:14px;margin:25px 0}.transaction-form label{display:grid;gap:7px;font-size:12px;font-weight:700}.transaction-form input,.transaction-form select,.grade-toolbar select{border:1px solid #ccd1d8;border-radius:5px;padding:10px;background:#fff}.tx-notes{grid-column:span 3}.add-transaction{align-self:end}.table-wrap{overflow:auto}.data-table{width:100%;border-collapse:collapse;font-size:13px}.data-table th,.data-table td{padding:10px 12px;border-bottom:1px solid #ddd;text-align:left;white-space:nowrap}.data-table th{background:#f7f7f7;color:#111}.type-badge{background:#eef6f6;padding:5px 8px;border-radius:12px}.delete-btn{border:1px solid #d66;background:#fff;color:#a22;border-radius:4px;padding:5px 9px;cursor:pointer}.transaction-total{text-align:right;padding:18px 5px 0}.empty-cell{text-align:center!important;color:#777;padding:30px!important}
-/* ==================== FEATURE 02: TRANSACTIONS CSS END ==================== */
+/* ==================== FEATURE 02: ANNOUNCEMENTS CSS START ================== */
+/* ============================================================
+   In style.css, replace the whole block from
+   "FEATURE 02: ANNOUNCEMENTS CSS START" to "FEATURE 02: ANNOUNCEMENTS CSS END"
+   with everything below.
+   ============================================================ */
+
+/* ==================== SHARED TABLE / FORM STYLES START ==================== */
+/* Used by Feature 01 (Transactions and Grades). Keep these. */
+.transaction-form{display:grid;grid-template-columns:2fr 1fr 1.2fr 1.2fr;gap:14px;margin:25px 0}
+.transaction-form label{display:grid;gap:7px;font-size:12px;font-weight:700}
+.transaction-form input,.transaction-form select,.grade-toolbar select{border:1px solid #ccd1d8;border-radius:5px;padding:10px;background:#fff}
+.tx-notes{grid-column:span 3}
+.add-transaction{align-self:end}
+.table-wrap{overflow:auto}
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th,.data-table td{padding:10px 12px;border-bottom:1px solid #ddd;text-align:left;white-space:nowrap}
+.data-table th{background:#f7f7f7;color:#111}
+.type-badge{background:#eef6f6;padding:5px 8px;border-radius:12px}
+.delete-btn{border:1px solid #d66;background:#fff;color:#a22;border-radius:4px;padding:5px 9px;cursor:pointer}
+.transaction-total{text-align:right;padding:18px 5px 0}
+.empty-cell{text-align:center!important;color:#777;padding:30px!important}
+/* ==================== SHARED TABLE / FORM STYLES END ====================== */
+
+/* ==================== FEATURE 02: ANNOUNCEMENTS CSS START ================== */
+.feature-heading-row{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+.form-message{min-height:20px;margin:14px 0 0;font-size:13px;color:#12807b}
+.form-message.error{color:#a32929}
+.action-btn{border:1px solid #20beb9;background:#fff;color:#12807b;border-radius:4px;padding:5px 11px;cursor:pointer}
+.action-btn:hover{background:#eef9f9}
+.action-btn:focus-visible,.chip:focus-visible{outline:2px solid #1d1d2d;outline-offset:2px}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0}
+.chip{border:1px solid #ccd1d8;background:#fff;border-radius:16px;padding:7px 14px;cursor:pointer;font-size:13px}
+.chip.active{background:#20beb9;border-color:#20beb9;color:#fff}
+.announce-list{display:grid;gap:14px}
+.announce-card{border:1px solid #e1e4e8;border-left:4px solid #d5d9e0;padding:18px 20px;background:#fff}
+.announce-card.unread{border-left-color:#20beb9;background:#f7fcfc}
+.announce-meta{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:8px;font-size:12px;color:#626b80}
+.announce-card h2{margin:0 0 8px;font-size:17px}
+.announce-card p{margin:0 0 14px;line-height:1.55;max-width:75ch}
+.pin-tag{font-weight:700;color:#17213a}
+@media(max-width:700px){.feature-heading-row{flex-direction:column;align-items:stretch}}
+/* ==================== FEATURE 02: ANNOUNCEMENTS CSS END ==================== */
 
 /* ==================== FEATURE 03: GRADES CSS START ======================== */
 .grades-shell{display:grid;grid-template-columns:375px 1fr;gap:25px}.grade-profile{min-height:500px}.grade-content{min-width:0}.grade-toolbar{display:flex;align-items:center;gap:9px;margin:16px 0 64px 12px}.grade-toolbar label{font-size:12px;font-weight:700}.grade-toolbar select{padding:7px 30px 7px 9px;font-size:12px;border-color:#20beb9;box-shadow:0 0 0 2px #20beb91a}.grade-table{font-size:12px}.grade-summary{display:grid;grid-template-columns:230px 90px;gap:7px 5px;margin:22px 0 0 40px;font-size:13px}.grade-summary strong{font-weight:400}

@@ -126,7 +126,22 @@
                  Backend placeholder: /api/Feature02API/
                  Add matching JS/CSS only inside their marked placeholder blocks.
                  ====================================================================== -->
-            <section id="feature-02" class="feature-section"><div class="panel placeholder"><h1>Feature 02</h1><p>Reserved for a future portal feature/API.</p></div></section>
+            <section id="feature-02" class="feature-section">
+                <div class="panel">
+                    <div class="section-heading feature-heading-row">
+                        <div>
+                            <h1>Announcements</h1>
+                            <p id="announceCount">Loading…</p>
+                        </div>
+                        <button class="action-btn" id="markAllRead" type="button">Mark all as read</button>
+                    </div>
+ 
+                     <p class="form-message" id="announceStatus" role="status"></p>
+ 
+                     <div class="chip-row" id="announceFilters" role="group" aria-label="Filter announcements by category"></div>
+                    <div class="announce-list" id="announceList"></div>
+                 </div>
+            </section>
             <!-- ==================== FEATURE 02 PLACEHOLDER END ======================= -->
 
             <!-- ==================== FEATURE 03 PLACEHOLDER START =====================

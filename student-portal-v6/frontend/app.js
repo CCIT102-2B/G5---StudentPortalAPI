@@ -54,6 +54,10 @@ function showAnnounceStatus(text, isError){
     box.classList.toggle('error', Boolean(isError));
 }
 
+function escapeHtml(value){
+    return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 async function loadAnnouncements(){
     showAnnounceStatus('Loading announcements…', false);
     try {
@@ -111,7 +115,7 @@ document.getElementById('markAllRead').onclick = () => {
 
 // Load on page open, and again each time the student opens the Announcements page
 // so newly posted announcements show up without a full refresh.
-window.addEventListener('hashchange', () => { if (location.hash === '#feature-02') loadAnnouncements(); });
+window.addEventListener('hashchange', () => { if (location.hash === '#announcements') loadAnnouncements(); });
 loadAnnouncements();
 // ==================== FEATURE 02: ANNOUNCEMENTS JS END ======================
 
@@ -161,7 +165,7 @@ renderGrades();
 // ==================== STUDENT PORTAL: GRADES JS END =========================
 
 // ==================== FEATURE ROUTING START =================================
-const titles={'#student-portal':'Student Portal','#feature-02':'Feature 02','#feature-03':'Feature 03','#feature-04':'Feature 04'};
+const titles={'#student-portal':'Student Portal','#announcements':'Announcements','#feature-03':'Feature 03','#feature-04':'Feature 04'};
 function route(){ const hash=titles[location.hash]?location.hash:'#student-portal'; document.querySelectorAll('.feature-section').forEach(s=>s.classList.toggle('active-section','#'+s.id===hash)); document.querySelectorAll('.sidebar nav a').forEach(a=>a.classList.toggle('active',a.getAttribute('href')===hash)); document.getElementById('pageTitle').textContent=titles[hash]; }
 window.addEventListener('hashchange',route); route();
 // ==================== FEATURE ROUTING END ===================================

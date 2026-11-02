@@ -1,5 +1,15 @@
 namespace AnnouncementAPI.Models;
 
+public class Announcement
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = "";
+    public string Message { get; set; } = "";
+    public string Category { get; set; } = "Academic"; // Academic, Finance, Events, Reminders
+    public DateTime DatePosted { get; set; } = DateTime.Now;
+    public bool IsRead { get; set; }
+}
+
 // One announcement as it is stored in announcements.json and sent to the frontend.
 public class AnnouncementRecord
 {
@@ -17,3 +27,4 @@ public record CreateAnnouncementRequest(string? Title, string? Body, string? Cat
 // Responses (same style as the Account API: Success + Message + data)
 public record AnnouncementListResponse(bool Success, string Message, List<AnnouncementRecord> Announcements);
 public record AnnouncementResponse(bool Success, string Message, AnnouncementRecord? Announcement);
+

@@ -7,6 +7,7 @@ namespace AnnouncementAPI.Controllers;
 
 [ApiController]
 [Route("api/announcements")]
+
 public class AnnouncementController : ControllerBase
 {
     private static readonly object Gate = new();
@@ -131,3 +132,4 @@ public class AnnouncementController : ControllerBase
         }
     }
 }
+

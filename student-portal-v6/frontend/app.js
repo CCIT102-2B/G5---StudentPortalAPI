@@ -21,32 +21,117 @@ document.getElementById('logoutBtn').onclick = () => { sessionStorage.clear(); l
 // ==================== SHARED PORTAL / SESSION CODE END ======================
 
 // ==================== FEATURE 02: TRANSACTIONS JS START =====================
-// Demo-only browser storage. Replace these localStorage operations with fetch()
-// calls when the Transactions API is implemented.
-const txKey = `studentPortalTransactions:${studentId}`;
-const exampleTransactions = [
-    {id:1,date:'2026-08-12',description:'First tuition installment',type:'Tuition Fee',amount:12500,notes:'Official receipt recorded'},
-    {id:2,date:'2026-09-03',description:'Student organization shirt',type:'Non-School Fee',amount:450,notes:'Optional activity'},
-    {id:3,date:'2026-10-15',description:'Midterm tuition payment',type:'Tuition Fee',amount:8000,notes:''}
-];
-let transactions = JSON.parse(localStorage.getItem(txKey) || 'null') || exampleTransactions;
+// ============================================================
+// PART A: NEW BLOCK
+// Paste this block into app.js right ABOVE the
+// "FEATURE ROUTING START" line.
+// ============================================================
 
-function saveTransactions(){ localStorage.setItem(txKey, JSON.stringify(transactions)); }
-function money(value){ return new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP'}).format(value); }
-function renderTransactions(){
-    const rows = document.getElementById('transactionRows');
-    rows.innerHTML = transactions.length ? transactions.map(tx => `<tr><td>${tx.date}</td><td>${escapeHtml(tx.description)}</td><td><span class="type-badge">${escapeHtml(tx.type)}</span></td><td>${money(tx.amount)}</td><td>${escapeHtml(tx.notes || '—')}</td><td><button class="delete-btn" data-delete-tx="${tx.id}">Delete</button></td></tr>`).join('') : '<tr><td colspan="6" class="empty-cell">No transactions recorded.</td></tr>';
-    document.getElementById('transactionTotal').textContent = money(transactions.reduce((sum,tx)=>sum+Number(tx.amount),0));
-    document.querySelectorAll('[data-delete-tx]').forEach(button => button.onclick = () => { transactions = transactions.filter(tx => String(tx.id) !== button.dataset.deleteTx); saveTransactions(); renderTransactions(); });
+// ==================== FEATURE 02: ANNOUNCEMENTS JS START ====================
+// Talks to api/announcementapi. Start it with: dotnet run (port 5003).
+const ANNOUNCEMENT_API = 'http://localhost:5003/api/announcements';
+
+// Which announcements this student has read stays in the browser, per student.
+const announceReadKey = `studentPortalAnnouncementsRead:${studentId}`;
+const announceCategories = ['All', 'Academic', 'Finance', 'Events', 'Reminders'];
+let announcements = [];
+let announceFilter = 'All';
+let readAnnouncements = loadReadAnnouncements();
+
+function loadReadAnnouncements(){
+    try {
+        const stored = JSON.parse(localStorage.getItem(announceReadKey) || '[]');
+        return Array.isArray(stored) ? stored : [];
+    } catch { return []; }
 }
-function escapeHtml(value){ const div=document.createElement('div'); div.textContent=String(value); return div.innerHTML; }
-document.getElementById('txDate').value = new Date().toISOString().slice(0,10);
-document.getElementById('transactionForm').onsubmit = event => {
-    event.preventDefault();
-    transactions.push({id:Date.now(),description:document.getElementById('txDescription').value.trim(),amount:Number(document.getElementById('txAmount').value),type:document.getElementById('txType').value,date:document.getElementById('txDate').value,notes:document.getElementById('txNotes').value.trim()});
-    saveTransactions(); event.target.reset(); document.getElementById('txDate').value = new Date().toISOString().slice(0,10); renderTransactions();
+function saveReadAnnouncements(){ localStorage.setItem(announceReadKey, JSON.stringify(readAnnouncements)); }
+function formatAnnouncementDate(isoDate){
+    return new Date(isoDate + 'T00:00:00').toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
+}
+function showAnnounceStatus(text, isError){
+    const box = document.getElementById('announceStatus');
+    box.textContent = text;
+    box.classList.toggle('error', Boolean(isError));
+}
+
+function escapeHtml(value){
+    return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function loadAnnouncements(){
+    showAnnounceStatus('Loading announcements…', false);
+    try {
+        const response = await fetch(ANNOUNCEMENT_API);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Request failed.');
+        announcements = data.announcements;
+        showAnnounceStatus('', false);
+    } catch (error) {
+        console.error(error);
+        announcements = [];
+        showAnnounceStatus('Could not load announcements. Start api/announcementapi with dotnet run.', true);
+    }
+    renderAnnouncements();
+}
+
+function renderAnnouncements(){
+    document.getElementById('announceFilters').innerHTML = announceCategories.map(c =>
+        `<button type="button" class="chip${c === announceFilter ? ' active' : ''}" data-filter="${c}" aria-pressed="${c === announceFilter}">${c}</button>`).join('');
+
+    const unread = announcements.filter(a => !readAnnouncements.includes(a.id)).length;
+    document.getElementById('announceCount').textContent = announcements.length === 0
+        ? 'No announcements to show'
+        : (unread === 0 ? 'You are all caught up' : `${unread} unread`);
+
+    const visible = announcements
+        .filter(a => announceFilter === 'All' || a.category === announceFilter)
+        .sort((a, b) => Number(b.pinned) - Number(a.pinned) || b.date.localeCompare(a.date));
+
+    document.getElementById('announceList').innerHTML = visible.length
+        ? visible.map(a => {
+            const isRead = readAnnouncements.includes(a.id);
+            return `<article class="announce-card${isRead ? '' : ' unread'}"><div class="announce-meta"><span class="type-badge">${escapeHtml(a.category)}</span><span>${formatAnnouncementDate(a.date)}</span>${a.pinned ? '<span class="pin-tag">Pinned</span>' : ''}</div><h2>${escapeHtml(a.title)}</h2><p>${escapeHtml(a.body)}</p><button type="button" class="action-btn" data-toggle-read="${a.id}">${isRead ? 'Mark as unread' : 'Mark as read'}</button></article>`;
+        }).join('')
+        : '<p class="empty-cell">No announcements in this category.</p>';
+}
+
+document.getElementById('announceFilters').onclick = event => {
+    const chip = event.target.closest('[data-filter]');
+    if (chip){ announceFilter = chip.dataset.filter; renderAnnouncements(); }
 };
-renderTransactions();
+document.getElementById('announceList').onclick = event => {
+    const button = event.target.closest('[data-toggle-read]');
+    if (!button) return;
+    const id = Number(button.dataset.toggleRead);
+    readAnnouncements = readAnnouncements.includes(id) ? readAnnouncements.filter(x => x !== id) : [...readAnnouncements, id];
+    saveReadAnnouncements();
+    renderAnnouncements();
+};
+document.getElementById('markAllRead').onclick = () => {
+    readAnnouncements = announcements.map(a => a.id);
+    saveReadAnnouncements();
+    renderAnnouncements();
+};
+
+// Load on page open, and again each time the student opens the Announcements page
+// so newly posted announcements show up without a full refresh.
+window.addEventListener('hashchange', () => { if (location.hash === '#announcements') loadAnnouncements(); });
+loadAnnouncements();
+// ==================== FEATURE 02: ANNOUNCEMENTS JS END ======================
+
+
+// ============================================================
+// PART B: ROUTING TITLES
+// In the routing block, replace the `const titles=...` line with:
+// ============================================================
+// const titles={'#student-portal':'Student Portal','#feature-02':'Announcements','#feature-03':'Feature 03','#feature-04':'Feature 04'};
+
+
+// ============================================================
+// PART C (optional): RENAME TWO COMMENTS
+// Your Transactions code belongs to Feature 01, not Feature 02, so rename
+// "FEATURE 02: TRANSACTIONS JS START/END" to "STUDENT PORTAL: TRANSACTIONS JS START/END".
+// ============================================================
 // ==================== FEATURE 02: TRANSACTIONS JS END =======================
 
 // ==================== STUDENT PORTAL: GRADES JS START =======================
@@ -80,7 +165,7 @@ renderGrades();
 // ==================== STUDENT PORTAL: GRADES JS END =========================
 
 // ==================== FEATURE ROUTING START =================================
-const titles={'#student-portal':'Student Portal','#feature-02':'Feature 02','#feature-03':'Feature 03','#feature-04':'Feature 04'};
+const titles={'#student-portal':'Student Portal','#announcements':'Announcements','#feature-03':'Feature 03','#feature-04':'Feature 04'};
 function route(){ const hash=titles[location.hash]?location.hash:'#student-portal'; document.querySelectorAll('.feature-section').forEach(s=>s.classList.toggle('active-section','#'+s.id===hash)); document.querySelectorAll('.sidebar nav a').forEach(a=>a.classList.toggle('active',a.getAttribute('href')===hash)); document.getElementById('pageTitle').textContent=titles[hash]; }
 window.addEventListener('hashchange',route); route();
 // ==================== FEATURE ROUTING END ===================================

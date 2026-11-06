@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+    <button class="brand" id="collapseBtn" type="button" title="Collapse sidebar">
+        <div class="portal-logo">SP</div>
+        <div class="brand-text"><strong>STUDENT</strong><span>PORTAL</span></div>
+    </button>
+    <nav>
+        <a href="#student-portal" class="active"><span class="nav-number">01</span><span class="nav-text">Student Portal</span></a>
+        <a href="#announcements"><span class="nav-number">02</span><span class="nav-text">Announcements</span></a>
+        <a href="#feature-03"><span class="nav-number">03</span><span class="nav-text">Lost & Found</span></a>
+        <a href="#feature-04"><span class="nav-number">04</span><span class="nav-text">Library Access</span></a>
+        <a href="#admin-dashboard" id="adminNav" class="hidden"><span class="nav-number">A</span><span class="nav-text">Admin Dashboard</span></a>
+    </nav>
+    <button class="logout" id="logoutBtn"><span>↪</span><span class="nav-text">Logout</span></button>
+</aside>
+
+<div class="page">
+<header class="topbar">
+    <h2 id="pageTitle">Student Portal</h2>
+    <p>Hi, <strong id="topName">STUDENT</strong></p>
+</header>
+<main class="content">
+
+<section id="student-portal" class="feature-section active-section portal-feature">
+    <div class="dashboard-panel">
+        <h1>Student Information</h1>
+        <p class="dashboard-date" id="dashboardDate"></p>
+        <article class="profile-card screenshot-profile main-profile">
+            <div class="campus-photo"><div class="campus-placeholder">STUDENT PORTAL</div></div>
+            <div class="profile-avatar" id="avatar">S</div>
+            <div class="profile-copy">
+                <h2 id="studentName">Student</h2>
+                <p id="studentProgram">Program</p>
+                <strong id="studentNumber">—</strong>
+                <span id="studentEmail">—</span>
+                <span id="studentYear">—</span>
+            </div>
+        </article>
+    </div>
+
+    <div class="panel portal-subsection">
+        <div class="section-heading"><h1>General Transactions</h1><p>Your transaction and grade records are intentionally blank for now.</p></div>
+        <div class="table-wrap">
+            <table class="data-table"><thead><tr><th>Date</th><th>Description</th><th>Type</th><th>Amount</th><th>Notes</th></tr></thead>
+            <tbody id="transactionRows"><tr><td colspan="5" class="empty-cell">No transactions recorded.</td></tr></tbody></table>
+        </div>
+        <div class="transaction-total">Total recorded: <strong id="transactionTotal">₱0.00</strong></div>
+    </div>
+
+    <div class="panel portal-subsection grades-section">
+        <div class="section-heading grade-heading-row">
+            <div><h1>Grades</h1><p>Grades will appear here once an administrator records them.</p></div>
+            <div class="grade-toolbar"><label for="semesterSelect">Semester</label><select id="semesterSelect"><option>1st Semester</option><option>2nd Semester</option></select></div>
+        </div>
+        <div class="table-wrap"><table class="data-table grade-table"><thead><tr><th>#</th><th>Subject Code</th><th>Subject</th><th>Instructor</th><th>Units</th><th>Prelim</th><th>Midterm</th><th>Finals</th><th>Final Rating</th></tr></thead><tbody id="gradeRows"><tr><td colspan="9" class="empty-cell">No grades recorded.</td></tr></tbody></table></div>
+        <div class="grade-summary" id="gradeSummary"></div>
+    </div>
+</section>
+
+<section id="announcements" class="feature-section">
+    <div class="panel">
+        <div class="section-heading feature-heading-row">
+            <div><h1>Announcements</h1><p id="announceCount">Loading…</p></div>
+            <button class="action-btn" id="markAllRead" type="button">Mark all as read</button>
+        </div>
+        <p class="form-message" id="announceStatus" role="status"></p>
+        <div class="announcement-tabs">
+            <button type="button" id="allAnnouncementsTab" class="chip active">All Announcements</button>
+            <button type="button" id="personalAnnouncementsTab" class="chip">Personal Announcements</button>
+        </div>
+        <div class="chip-row" id="announceFilters"></div>
+        <div class="announce-list" id="announceList"></div>
+    </div>
+</section>
+
+<section id="feature-03" class="feature-section">
+    <div class="panel">
+        <div class="section-heading"><h1>Lost & Found Management</h1><p>Report a missing or found item. Admin notifications are linked to the Announcements system.</p></div>
+        <form id="lostFoundForm" class="form-grid lost-found-form">
+            <label>Item Name<input id="lfItemName" required></label>
+            <label>Category<input id="lfCategory" placeholder="ID, electronics, clothing..." required></label>
+            <label>Type<select id="lfType"><option>Lost</option><option>Found</option></select></label>
+            <label>Location<input id="lfLocation" required></label>
+            <label class="full-span">Description<textarea id="lfDescription" required></textarea></label>
+            <button class="primary" type="submit">Submit Report</button>
+        </form>
+        <p class="form-message" id="lfStatus"></p>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Item</th><th>Type</th><th>Category</th><th>Location</th><th>Status</th><th>Date</th></tr></thead><tbody id="lostFoundRows"></tbody></table></div>
+    </div>
+</section>
+
+<section id="feature-04" class="feature-section">
+    <div class="panel placeholder"><h1>Feature 04 · Library Access</h1><p>This feature is intentionally left blank for now.</p></div>
+</section>
+
+<section id="admin-dashboard" class="feature-section">
+    <div class="panel admin-panel">
+        <div class="section-heading"><h1>Administrator Dashboard</h1><p>Manage students, classes, transactions, and announcements.</p></div>
+        <div class="admin-tabs">
+            <button class="chip active" data-admin-tab="students">Students</button>
+            <button class="chip" data-admin-tab="transactions">Transactions</button>
+            <button class="chip" data-admin-tab="announcements">Announcements</button>
+            <button class="chip" data-admin-tab="lostfound">Lost & Found</button>
+        </div>
+
+        <div id="admin-students" class="admin-view active-admin-view">
+            <div class="admin-form-card">
+                <h2>Add / Change Student</h2>
+                <form id="studentEditForm" class="form-grid">
+                    <label>Student Number<input id="adminStudentId" required></label>
+                    <label>First Name<input id="adminFirstName" required></label>
+                    <label>Middle Name<input id="adminMiddleName"></label>
+                    <label>Last Name<input id="adminLastName" required></label>
+                    <label>Email<input id="adminEmail" type="email" required></label>
+                    <label>Program<select id="adminProgram" required></select></label>
+                    <label>Year Level<select id="adminYear" required><option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option></select></label>
+                    <label>Class / Section<input id="adminClass" placeholder="e.g. BSIT-2A"></label>
+                    <button class="primary" type="submit">Save Student Changes</button>
+                </form>
+                <p id="adminStudentStatus" class="form-message"></p>
+            </div>
+            <div class="table-wrap"><table class="data-table"><thead><tr><th>Student Number</th><th>Name</th><th>Program</th><th>Year</th><th>Class</th><th>Action</th></tr></thead><tbody id="adminStudentRows"></tbody></table></div>
+        </div>
+
+        <div id="admin-transactions" class="admin-view">
+            <div class="admin-form-card">
+                <h2>Add Transaction for a Program / Class</h2>
+                <form id="adminTransactionForm" class="form-grid">
+                    <label>Student Number<input id="adminTxStudentId" required></label>
+                    <label>Program<select id="adminTxProgram" required></select></label>
+                    <label>Class / Section<input id="adminTxClass" required placeholder="e.g. BSIT-2A"></label>
+                    <label>Description<input id="adminTxDescription" required></label>
+                    <label>Amount<input id="adminTxAmount" type="number" min="0" step="0.01" required></label>
+                    <label>Type<select id="adminTxType"><option>Tuition Fee</option><option>School Fee</option><option>Other</option></select></label>
+                    <label>Date<input id="adminTxDate" type="date" required></label>
+                    <label>Notes<input id="adminTxNotes"></label>
+                    <button class="primary" type="submit">Add Transaction</button>
+                </form>
+                <p id="adminTxStatus" class="form-message"></p>
+            </div>
+            <div class="table-wrap"><table class="data-table"><thead><tr><th>Student</th><th>Program</th><th>Class</th><th>Description</th><th>Amount</th><th>Date</th></tr></thead><tbody id="adminTransactionRows"></tbody></table></div>
+        </div>
+
+        <div id="admin-announcements" class="admin-view">
+            <div class="admin-form-card">
+                <h2>Create Announcement</h2>
+                <form id="adminAnnouncementForm" class="form-grid">
+                    <label>Title<input id="adminAnnTitle" required></label>
+                    <label>Category<select id="adminAnnCategory"><option>Academic</option><option>Finance</option><option>Events</option><option>Reminders</option><option>Lost & Found</option><option>General</option></select></label>
+                    <label>Audience<select id="adminAnnAudience"><option value="Everyone">Everyone</option><option value="Program">Specific Program</option><option value="Student">Specific Student</option></select></label>
+                    <label id="adminAnnAudienceValueWrap">Audience Value<input id="adminAnnAudienceValue" placeholder="Program or student number"></label>
+                    <label class="full-span">Message<textarea id="adminAnnBody" required></textarea></label>
+                    <label class="check-label"><input id="adminAnnPinned" type="checkbox"> Pin announcement</label>
+                    <button class="primary" type="submit">Publish Announcement</button>
+                </form>
+                <p id="adminAnnStatus" class="form-message"></p>
+            </div>
+            <div class="table-wrap"><table class="data-table"><thead><tr><th>Title</th><th>Audience</th><th>Category</th><th>Date</th><th>Action</th></tr></thead><tbody id="adminAnnouncementRows"></tbody></table></div>
+        </div>
+
+        <div id="admin-lostfound" class="admin-view">
+            <div class="table-wrap"><table class="data-table"><thead><tr><th>Item</th><th>Student</th><th>Program</th><th>Type</th><th>Status</th><th>Action</th></tr></thead><tbody id="adminLostFoundRows"></tbody></table></div>
+        </div>
+    </div>
+</section>
+</main>
+<footer>Student Portal · 2026</footer>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

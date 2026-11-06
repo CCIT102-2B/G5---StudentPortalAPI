@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal - Login</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body class="login-page">
+<main class="auth-shell">
+    <section class="auth-brand">
+        <div class="portal-logo large">SP</div>
+        <h1>Student Portal</h1>
+        <p>Campus account and student services</p>
+    </section>
+
+    <section class="auth-card">
+        <div class="auth-tabs">
+            <button id="loginTab" class="active" type="button">Student Login</button>
+            <button id="adminTab" type="button">Admin Login</button>
+            <button id="createTab" type="button">Create Account</button>
+        </div>
+
+        <form id="loginForm">
+            <h2>Welcome back</h2>
+            <label>Student Number<input id="loginStudentId" placeholder="e.g. S202600001" required></label>
+            <label>Password<input id="loginPassword" type="password" required></label>
+            <button class="primary" type="submit">Login</button>
+        </form>
+
+        <form id="adminForm" class="hidden">
+            <h2>Administrator Login</h2>
+            <label>Administrator Username<input id="adminUsername" value="Dragonborn" required></label>
+            <label>Password<input id="adminPassword" type="password" required></label>
+            <button class="primary" type="submit">Enter Admin Dashboard</button>
+            <p class="small-note">Administrator access is for authorized school staff.</p>
+        </form>
+
+        <form id="createForm" class="hidden">
+            <h2>Create Student Account</h2>
+            <p class="small-note">Your school number is generated automatically when the account is created.</p>
+            <div class="form-grid">
+                <label>Email<input id="email" type="email" required></label>
+                <label>First Name<input id="firstName" required></label>
+                <label>Middle Name<input id="middleName"></label>
+                <label>Last Name<input id="lastName" required></label>
+                <label>Program
+                    <select id="program" required>
+                        <option value="">Select Program</option>
+                        <option>Bachelor of Science in Information Technology</option>
+                        <option>Bachelor of Science in Computer Science</option>
+                        <option>Bachelor of Science in Information Systems</option>
+                        <option>Bachelor of Science in Entertainment and Multimedia Computing</option>
+                        <option>Bachelor of Science in Computer Engineering</option>
+                        <option>Bachelor of Science in Data Science</option>
+                        <option>Bachelor of Science in Cybersecurity</option>
+                        <option>Bachelor of Science in Computer Technology</option>
+                        <option>Bachelor of Science in Information Management</option>
+                        <option>Bachelor of Science in Information Technology Management</option>
+                    </select>
+                </label>
+                <label>Year Level
+                    <select id="yearLevel" required>
+                        <option value="">Select Year Level</option>
+                        <option>1st Year</option>
+                        <option>2nd Year</option>
+                        <option>3rd Year</option>
+                        <option>4th Year</option>
+                    </select>
+                </label>
+                <label>Password<input id="password" type="password" minlength="6" required></label>
+            </div>
+            <button class="primary" type="submit">Create Account</button>
+        </form>
+
+        <p id="message" class="message"></p>
+    </section>
+</main>
+<script src="login.js"></script>
+</body>
+</html>

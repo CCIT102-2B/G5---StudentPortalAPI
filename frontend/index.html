@@ -9,13 +9,13 @@
 <body>
 <aside class="sidebar" id="sidebar">
     <button class="brand" id="collapseBtn" type="button" title="Collapse sidebar">
-        <div class="portal-logo">SP</div>
-        <div class="brand-text"><strong>STUDENT</strong><span>PORTAL</span></div>
+        <span class="portal-logo">SP</span>
+        <span class="brand-text"><strong>STUDENT</strong><span>PORTAL</span></span>
     </button>
     <nav>
         <a href="#student-portal" class="active"><span class="nav-number">01</span><span class="nav-text">Student Portal</span></a>
         <a href="#announcements"><span class="nav-number">02</span><span class="nav-text">Announcements</span></a>
-        <a href="#feature-03"><span class="nav-number">03</span><span class="nav-text">Lost & Found</span></a>
+        <a href="#feature-03"><span class="nav-number">03</span><span class="nav-text">Lost &amp; Found</span></a>
         <a href="#feature-04"><span class="nav-number">04</span><span class="nav-text">Library Access</span></a>
         <a href="#admin-dashboard" id="adminNav" class="hidden"><span class="nav-number">A</span><span class="nav-text">Admin Dashboard</span></a>
     </nav>
@@ -83,7 +83,7 @@
 
 <section id="feature-03" class="feature-section">
     <div class="panel">
-        <div class="section-heading"><h1>Lost & Found Management</h1><p>Report a missing or found item. Admin notifications are linked to the Announcements system.</p></div>
+        <div class="section-heading"><h1>Lost &amp; Found Management</h1><p>Report a missing or found item. Admin notifications are linked to the Announcements system.</p></div>
         <form id="lostFoundForm" class="form-grid lost-found-form">
             <label>Item Name<input id="lfItemName" required></label>
             <label>Category<input id="lfCategory" placeholder="ID, electronics, clothing..." required></label>
@@ -98,17 +98,29 @@
 </section>
 
 <section id="feature-04" class="feature-section">
-    <div class="panel placeholder"><h1>Feature 04 · Library Access</h1><p>This feature is intentionally left blank for now.</p></div>
+    <div class="panel">
+        <div class="section-heading"><h1>Library Access</h1><p id="libraryCount">Loading…</p></div>
+        <p class="form-message" id="libraryStatus" role="status"></p>
+        <div class="library-toolbar">
+            <label class="library-search">Search books
+                <input id="librarySearch" type="search" placeholder="Title, author, ISBN, publisher, or category">
+            </label>
+        </div>
+        <div class="chip-row" id="libraryFilters"></div>
+        <div class="book-grid" id="libraryCards"></div>
+        <p class="small-note library-note">Borrowing is handled at the library desk. Availability is updated by the librarian.</p>
+    </div>
 </section>
 
 <section id="admin-dashboard" class="feature-section">
     <div class="panel admin-panel">
         <div class="section-heading"><h1>Administrator Dashboard</h1><p>Manage students, classes, transactions, and announcements.</p></div>
         <div class="admin-tabs">
-            <button class="chip active" data-admin-tab="students">Students</button>
-            <button class="chip" data-admin-tab="transactions">Transactions</button>
-            <button class="chip" data-admin-tab="announcements">Announcements</button>
-            <button class="chip" data-admin-tab="lostfound">Lost & Found</button>
+            <button type="button" class="chip active" data-admin-tab="students">Students</button>
+            <button type="button" class="chip" data-admin-tab="transactions">Transactions</button>
+            <button type="button" class="chip" data-admin-tab="announcements">Announcements</button>
+            <button type="button" class="chip" data-admin-tab="lostfound">Lost &amp; Found</button>
+            <button type="button" class="chip" data-admin-tab="library">Library</button>
         </div>
 
         <div id="admin-students" class="admin-view active-admin-view">
@@ -154,7 +166,7 @@
                 <h2>Create Announcement</h2>
                 <form id="adminAnnouncementForm" class="form-grid">
                     <label>Title<input id="adminAnnTitle" required></label>
-                    <label>Category<select id="adminAnnCategory"><option>Academic</option><option>Finance</option><option>Events</option><option>Reminders</option><option>Lost & Found</option><option>General</option></select></label>
+                    <label>Category<select id="adminAnnCategory"><option>Academic</option><option>Finance</option><option>Events</option><option>Reminders</option><option>Lost &amp; Found</option><option>General</option></select></label>
                     <label>Audience<select id="adminAnnAudience"><option value="Everyone">Everyone</option><option value="Program">Specific Program</option><option value="Student">Specific Student</option></select></label>
                     <label id="adminAnnAudienceValueWrap">Audience Value<input id="adminAnnAudienceValue" placeholder="Program or student number"></label>
                     <label class="full-span">Message<textarea id="adminAnnBody" required></textarea></label>
@@ -164,6 +176,30 @@
                 <p id="adminAnnStatus" class="form-message"></p>
             </div>
             <div class="table-wrap"><table class="data-table"><thead><tr><th>Title</th><th>Audience</th><th>Category</th><th>Date</th><th>Action</th></tr></thead><tbody id="adminAnnouncementRows"></tbody></table></div>
+        </div>
+
+        <div id="admin-library" class="admin-view">
+            <div class="admin-form-card">
+                <h2 id="adminBookFormTitle">Add New Book</h2>
+                <form id="adminBookForm" class="form-grid">
+                    <input type="hidden" id="adminBookId">
+                    <label>Title<input id="adminBookTitle" maxlength="200" required></label>
+                    <label>Author<input id="adminBookAuthor" maxlength="200" required></label>
+                    <label>ISBN<input id="adminBookIsbn" maxlength="20" placeholder="Optional"></label>
+                    <label>Category<select id="adminBookCategory" required></select></label>
+                    <label>Publisher<input id="adminBookPublisher" maxlength="150"></label>
+                    <label>Year Published<input id="adminBookYear" type="number" min="1450" max="2100"></label>
+                    <label>Total Copies<input id="adminBookCopies" type="number" min="1" max="999" value="1" required></label>
+                    <label>Shelf / Location<input id="adminBookShelf" maxlength="30" placeholder="e.g. T-04"></label>
+                    <label class="full-span">Short Details<textarea id="adminBookDetails" maxlength="500" placeholder="A short summary of the book (max 500 characters)"></textarea></label>
+                    <div class="full-span form-actions">
+                        <button class="primary" id="adminBookSubmit" type="submit">Add Book</button>
+                        <button class="action-btn hidden" id="adminBookCancel" type="button">Cancel Edit</button>
+                    </div>
+                </form>
+                <p id="adminBookStatus" class="form-message" role="status"></p>
+            </div>
+            <div class="table-wrap"><table class="data-table"><thead><tr><th>Title</th><th>Author</th><th>Category</th><th>Available / Total</th><th>Shelf</th><th>Actions</th></tr></thead><tbody id="adminBookRows"></tbody></table></div>
         </div>
 
         <div id="admin-lostfound" class="admin-view">

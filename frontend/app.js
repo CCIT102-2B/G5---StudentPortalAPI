@@ -1,6 +1,7 @@
 const ACCOUNT_API = 'http://localhost:5002/api/account';
 const ANNOUNCEMENT_API = 'http://localhost:5003/api/announcements';
 const LOST_FOUND_API = 'http://localhost:5004/api/items';
+const LIBRARY_API = 'http://localhost:5005/api/library/books';
 const ADMIN_KEY = 'Dragonborn:Fusrodah';
 
 const role = sessionStorage.getItem('role') || '';
@@ -158,6 +159,10 @@ function populateProgramSelect(id) { el(id).innerHTML = PROGRAMS.map(p => `<opti
 function setupAdmin() {
     if (role !== 'Admin') return;
     populateProgramSelect('adminProgram'); populateProgramSelect('adminTxProgram');
+    populateCategorySelect('adminBookCategory');
+    el('adminBookForm').onsubmit = saveBook;
+    el('adminBookCancel').onclick = resetBookForm;
+    el('adminBookRows').onclick = handleBookAction;
     document.querySelectorAll('[data-admin-tab]').forEach(btn => btn.onclick = () => {
         document.querySelectorAll('[data-admin-tab]').forEach(x => x.classList.remove('active'));
         document.querySelectorAll('.admin-view').forEach(x => x.classList.remove('active-admin-view'));
@@ -166,6 +171,7 @@ function setupAdmin() {
         if (btn.dataset.adminTab === 'transactions') loadAdminTransactions();
         if (btn.dataset.adminTab === 'announcements') loadAdminAnnouncements();
         if (btn.dataset.adminTab === 'lostfound') loadLostFound();
+        if (btn.dataset.adminTab === 'library') loadLibrary();
     });
     el('adminTxDate').value = new Date().toISOString().slice(0,10);
     el('adminAnnAudience').onchange = () => { el('adminAnnAudienceValueWrap').classList.toggle('hidden', el('adminAnnAudience').value === 'Everyone'); };
@@ -225,6 +231,169 @@ async function notifyMissingItem(id) {
     } catch (err) { alert(err.message); }
 }
 
+// ---------------- FEATURE 04: LIBRARY ----------------
+const BOOK_CATEGORIES = ['Textbook', 'Reference', 'Technology', 'Mathematics', 'Science', 'Fiction', 'Non-Fiction', 'Journal', 'Research', 'General'];
+let libraryBooks = [];
+let libraryFilter = 'All';
+let librarySearch = '';
+
+function findBook(id) { return libraryBooks.find(b => b.id === Number(id)); }
+function populateCategorySelect(id) { el(id).innerHTML = BOOK_CATEGORIES.map(c => `<option>${escapeHtml(c)}</option>`).join(''); }
+
+async function loadLibrary() {
+    try {
+        const response = await fetch(LIBRARY_API);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Failed to load books.');
+        libraryBooks = data;
+        showStatus('libraryStatus', '');
+    } catch {
+        libraryBooks = [];
+        showStatus('libraryStatus', 'Could not load the library. Start api/libraryapi with dotnet run.', true);
+    }
+    renderLibrary();
+    if (role === 'Admin') renderAdminBooks();
+}
+
+function renderLibrary() {
+    const categories = ['All', ...new Set(libraryBooks.map(b => b.category).filter(Boolean))];
+    if (!categories.includes(libraryFilter)) libraryFilter = 'All';
+    el('libraryFilters').innerHTML = categories.map(c => `<button type="button" class="chip${c === libraryFilter ? ' active' : ''}" data-library-filter="${escapeHtml(c)}">${escapeHtml(c)}</button>`).join('');
+
+    const term = librarySearch.trim().toLowerCase();
+    const visible = libraryBooks.filter(b => {
+        if (libraryFilter !== 'All' && b.category !== libraryFilter) return false;
+        if (!term) return true;
+        return [b.title, b.author, b.isbn, b.category, b.publisher].some(v => String(v || '').toLowerCase().includes(term));
+    });
+
+    const available = libraryBooks.reduce((sum, b) => sum + Number(b.availableCopies || 0), 0);
+    el('libraryCount').textContent = libraryBooks.length ? `${libraryBooks.length} titles · ${available} copies available` : 'No books in the catalog yet';
+    el('libraryCards').innerHTML = visible.length
+        ? visible.map(bookCard).join('')
+        : `<p class="empty-cell">${libraryBooks.length ? 'No books match your search.' : 'The library catalog is empty.'}</p>`;
+}
+
+function bookCard(b) {
+    const available = Number(b.availableCopies || 0);
+    const total = Number(b.totalCopies || 0);
+    return `<article class="book-card">
+        <div class="book-card-top"><span class="type-badge">${escapeHtml(b.category)}</span><span class="book-avail ${available > 0 ? 'ok' : 'out'}">${available} of ${total} available</span></div>
+        <h2>${escapeHtml(b.title)}</h2>
+        <p class="book-author">${escapeHtml(b.author)}${b.publishedYear ? ` · ${escapeHtml(b.publishedYear)}` : ''}${b.publisher ? ` · ${escapeHtml(b.publisher)}` : ''}</p>
+        <p class="book-details">${escapeHtml(b.shortDetails || 'No description provided.')}</p>
+        <div class="book-meta"><span>Shelf: ${escapeHtml(b.shelf || '—')}</span><span>ISBN: ${escapeHtml(b.isbn || '—')}</span></div>
+    </article>`;
+}
+
+el('librarySearch').oninput = e => { librarySearch = e.target.value; renderLibrary(); };
+el('libraryFilters').onclick = e => { const b = e.target.closest('[data-library-filter]'); if (b) { libraryFilter = b.dataset.libraryFilter; renderLibrary(); } };
+
+// Admin: add / edit / delete / check out / return
+function renderAdminBooks() {
+    el('adminBookRows').innerHTML = libraryBooks.length ? libraryBooks.map(b => {
+        const available = Number(b.availableCopies || 0);
+        const total = Number(b.totalCopies || 0);
+        return `<tr><td>${escapeHtml(b.title)}</td><td>${escapeHtml(b.author)}</td><td>${escapeHtml(b.category)}</td><td>${available} / ${total}</td><td>${escapeHtml(b.shelf || '—')}</td><td class="row-actions">`
+            + `<button type="button" class="action-btn" data-book-action="edit" data-id="${b.id}">Edit</button>`
+            + `<button type="button" class="action-btn" data-book-action="checkout" data-id="${b.id}" ${available <= 0 ? 'disabled' : ''}>Check out</button>`
+            + `<button type="button" class="action-btn" data-book-action="return" data-id="${b.id}" ${available >= total ? 'disabled' : ''}>Return</button>`
+            + `<button type="button" class="delete-btn" data-book-action="delete" data-id="${b.id}">Delete</button></td></tr>`;
+    }).join('') : '<tr><td colspan="6" class="empty-cell">No books in the catalog yet.</td></tr>';
+}
+
+function handleBookAction(e) {
+    const btn = e.target.closest('[data-book-action]');
+    if (!btn) return;
+    const id = Number(btn.dataset.id);
+    const action = btn.dataset.bookAction;
+    if (action === 'edit') editBook(id);
+    else if (action === 'delete') deleteBook(id);
+    else adjustBookCopies(id, action);
+}
+
+function ensureCategoryOption(category) {
+    const select = el('adminBookCategory');
+    if (![...select.options].some(o => o.value === category)) select.add(new Option(category, category));
+}
+
+function editBook(id) {
+    const b = findBook(id);
+    if (!b) return;
+    const category = b.category || 'General';
+    ensureCategoryOption(category);
+    el('adminBookId').value = b.id;
+    el('adminBookTitle').value = b.title || '';
+    el('adminBookAuthor').value = b.author || '';
+    el('adminBookIsbn').value = b.isbn || '';
+    el('adminBookCategory').value = category;
+    el('adminBookPublisher').value = b.publisher || '';
+    el('adminBookYear').value = b.publishedYear ?? '';
+    el('adminBookCopies').value = b.totalCopies || 1;
+    el('adminBookShelf').value = b.shelf || '';
+    el('adminBookDetails').value = b.shortDetails || '';
+    el('adminBookFormTitle').textContent = 'Edit Book';
+    el('adminBookSubmit').textContent = 'Save Changes';
+    el('adminBookCancel').classList.remove('hidden');
+    el('adminBookTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el('adminBookTitle').focus();
+}
+
+function resetBookForm() {
+    el('adminBookForm').reset();
+    el('adminBookId').value = '';
+    el('adminBookFormTitle').textContent = 'Add New Book';
+    el('adminBookSubmit').textContent = 'Add Book';
+    el('adminBookCancel').classList.add('hidden');
+}
+
+async function saveBook(e) {
+    e.preventDefault();
+    const id = el('adminBookId').value;
+    const year = el('adminBookYear').value;
+    const payload = {
+        title: el('adminBookTitle').value.trim(),
+        author: el('adminBookAuthor').value.trim(),
+        isbn: el('adminBookIsbn').value.trim(),
+        category: el('adminBookCategory').value,
+        publisher: el('adminBookPublisher').value.trim(),
+        publishedYear: year ? Number(year) : null,
+        totalCopies: Number(el('adminBookCopies').value),
+        shelf: el('adminBookShelf').value.trim(),
+        shortDetails: el('adminBookDetails').value.trim()
+    };
+    try {
+        const r = await fetch(id ? `${LIBRARY_API}/${id}` : LIBRARY_API, { method: id ? 'PUT' : 'POST', headers: adminHeaders(), body: JSON.stringify(payload) });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(d.message || 'Could not save the book.');
+        showStatus('adminBookStatus', id ? 'Book updated.' : 'Book added to the catalog.');
+        resetBookForm();
+        await loadLibrary();
+    } catch (err) { showStatus('adminBookStatus', err.message, true); }
+}
+
+async function deleteBook(id) {
+    const b = findBook(id);
+    if (!b || !confirm(`Delete "${b.title}" from the catalog? This cannot be undone.`)) return;
+    try {
+        const r = await fetch(`${LIBRARY_API}/${id}`, { method: 'DELETE', headers: adminHeaders() });
+        if (!r.ok) { const d = await r.json().catch(() => ({})); throw new Error(d.message || 'Could not delete the book.'); }
+        if (Number(el('adminBookId').value) === id) resetBookForm();
+        showStatus('adminBookStatus', 'Book deleted.');
+        await loadLibrary();
+    } catch (err) { showStatus('adminBookStatus', err.message, true); }
+}
+
+async function adjustBookCopies(id, action) {
+    try {
+        const r = await fetch(`${LIBRARY_API}/${id}/${action}`, { method: 'POST', headers: adminHeaders() });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(d.message || 'Could not update copies.');
+        showStatus('adminBookStatus', `${action === 'checkout' ? 'Copy checked out' : 'Copy returned'}: ${d.title}.`);
+        await loadLibrary();
+    } catch (err) { showStatus('adminBookStatus', err.message, true); }
+}
+
 // ---------------- ROUTING ----------------
 const titles = { '#student-portal':'Student Portal', '#announcements':'Announcements', '#feature-03':'Lost & Found', '#feature-04':'Library Access', '#admin-dashboard':'Admin Dashboard' };
 function route() {
@@ -234,6 +403,7 @@ function route() {
     el('pageTitle').textContent = titles[hash];
     if (hash === '#announcements') loadAnnouncements();
     if (hash === '#feature-03') loadLostFound();
+    if (hash === '#feature-04') loadLibrary();
 }
 window.addEventListener('hashchange', route);
 
@@ -241,5 +411,6 @@ setupIdentity();
 loadStudentRecords();
 loadAnnouncements();
 loadLostFound();
+loadLibrary();
 setupAdmin();
 route();

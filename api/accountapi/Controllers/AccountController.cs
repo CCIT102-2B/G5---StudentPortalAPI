@@ -12,8 +12,7 @@ public class AccountController : ControllerBase
     private static readonly object Gate = new();
     private static string FilePath => Path.Combine(AppContext.BaseDirectory, "accounts.json");
     private static string TransactionsPath => Path.Combine(AppContext.BaseDirectory, "transactions.json");
-    private static string GradesPath => Path.Combine(AppContext.BaseDirectory, "grades.json");
-
+  
     // Demo administrator requested for this school project.
     private const string AdminUsername = "Dragonborn";
     private const string AdminPassword = "Fusrodah";
@@ -44,17 +43,7 @@ public class AccountController : ControllerBase
     private static void SaveTransactions(List<TransactionRecord> records) =>
         System.IO.File.WriteAllText(TransactionsPath, JsonSerializer.Serialize(records, new JsonSerializerOptions { WriteIndented = true }));
 
-    private static List<GradeRecord> LoadGrades()
-    {
-        if (!System.IO.File.Exists(GradesPath)) return new();
-        try { return JsonSerializer.Deserialize<List<GradeRecord>>(System.IO.File.ReadAllText(GradesPath)) ?? new(); }
-        catch { return new(); }
-    }
-
-    private static void SaveGrades(List<GradeRecord> records) =>
-        System.IO.File.WriteAllText(GradesPath, JsonSerializer.Serialize(records, new JsonSerializerOptions { WriteIndented = true }));
-
-    private static (string Hash, string Salt) HashPassword(string password)
+       private static (string Hash, string Salt) HashPassword(string password)
     {
         byte[] salt = RandomNumberGenerator.GetBytes(16);
         byte[] hash = Rfc2898DeriveBytes.Pbkdf2(password, salt, 100000, HashAlgorithmName.SHA256, 32);
@@ -204,7 +193,9 @@ public class AccountController : ControllerBase
         return Ok(records.OrderByDescending(t => t.Date));
     }
 
-    [HttpGet("grades/student/{studentId}")]
-    public ActionResult<IEnumerable<GradeRecord>> StudentGrades(string studentId) =>
-        Ok(LoadGrades().Where(g => g.StudentId.Equals(studentId, StringComparison.OrdinalIgnoreCase)));
+  [HttpGet("grades/student/{studentId}")]
+public IActionResult StudentGrades(string studentId)
+{
+    // Placeholder
+    return Ok(Array.Empty<GradeRecord>());
 }

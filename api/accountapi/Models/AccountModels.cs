@@ -55,7 +55,7 @@ public record TransactionRecord(
     string Date,
     string Notes);
 
-public record GradeRecord(
+public record GradeRecord(  //Placeholder model
     int Id,
     string StudentId,
     string Program,

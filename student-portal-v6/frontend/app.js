@@ -18,18 +18,108 @@ document.getElementById('dashboardDate').textContent = new Date().toLocaleString
 
 document.getElementById('collapseBtn').onclick = () => document.body.classList.toggle('collapsed');
 document.getElementById('logoutBtn').onclick = () => { sessionStorage.clear(); location.href = 'Login/index.html'; };
+
+// Shared helpers used by more than one feature.
+const PORTAL_API = 'http://localhost:5002/api'; // api/accountapi (login, transactions, grades)
+function escapeHtml(value){
+    return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function formatDate(isoDate){
+    return new Date(isoDate + 'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+}
+// Creates a small message line (same look as the announcements status) right before `target`.
+function addStatusLine(id, target){
+    const p = document.createElement('p');
+    p.id = id; p.className = 'form-message'; p.setAttribute('role', 'status');
+    target.before(p);
+    return (text, isError) => { p.textContent = text; p.classList.toggle('error', Boolean(isError)); };
+}
 // ==================== SHARED PORTAL / SESSION CODE END ======================
 
-// ==================== FEATURE 02: TRANSACTIONS JS START =====================
-// ============================================================
-// PART A: NEW BLOCK
-// Paste this block into app.js right ABOVE the
-// "FEATURE ROUTING START" line.
-// ============================================================
+// ==================== STUDENT PORTAL: TRANSACTIONS JS START =================
+// Saved in the Transactions table through api/accountapi (port 5002).
+const TX_API = `${PORTAL_API}/transactions`;
+let transactions = [];
+const txForm = document.getElementById('transactionForm');
+const showTxStatus = addStatusLine('txStatus', txForm);
+
+const peso = amount => '₱' + Number(amount).toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2});
+const todayIso = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+document.getElementById('txDate').value = todayIso();
+
+async function loadTransactions(){
+    try {
+        const response = await fetch(`${TX_API}?studentId=${encodeURIComponent(studentId)}`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Request failed.');
+        transactions = data.transactions;
+        showTxStatus('', false);
+    } catch (error) {
+        console.error(error);
+        transactions = [];
+        showTxStatus('Could not load transactions. Make sure api/accountapi is running (dotnet run).', true);
+    }
+    renderTransactions();
+}
+
+function renderTransactions(){
+    document.getElementById('transactionRows').innerHTML = transactions.length
+        ? transactions.map(t => `<tr><td>${formatDate(t.date)}</td><td>${escapeHtml(t.description)}</td><td>${escapeHtml(t.type)}</td><td>${peso(t.amount)}</td><td>${t.notes ? escapeHtml(t.notes) : '—'}</td><td><button type="button" class="action-btn" data-delete-tx="${t.id}">Delete</button></td></tr>`).join('')
+        : '<tr><td colspan="6" class="empty-cell">No transactions yet.</td></tr>';
+    document.getElementById('transactionTotal').textContent = peso(transactions.reduce((sum, t) => sum + Number(t.amount), 0));
+}
+
+txForm.onsubmit = async event => {
+    event.preventDefault();
+    const button = txForm.querySelector('button[type="submit"]');
+    const body = {
+        studentId,
+        description: document.getElementById('txDescription').value.trim(),
+        amount: Number(document.getElementById('txAmount').value),
+        type: document.getElementById('txType').value,
+        date: document.getElementById('txDate').value,
+        notes: document.getElementById('txNotes').value.trim() || null
+    };
+    button.disabled = true;
+    try {
+        const response = await fetch(TX_API, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || 'Could not save the transaction.');
+        txForm.reset();
+        document.getElementById('txDate').value = todayIso();
+        await loadTransactions();
+        showTxStatus('Transaction added.', false);
+    } catch (error) {
+        console.error(error);
+        showTxStatus(error.message === 'Failed to fetch'
+            ? 'Could not reach the server. Make sure api/accountapi is running (dotnet run).'
+            : error.message, true);
+    } finally {
+        button.disabled = false;
+    }
+};
+
+document.getElementById('transactionRows').onclick = async event => {
+    const button = event.target.closest('[data-delete-tx]');
+    if (!button || !confirm('Delete this transaction?')) return;
+    try {
+        const response = await fetch(`${TX_API}/${button.dataset.deleteTx}?studentId=${encodeURIComponent(studentId)}`, {method:'DELETE'});
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || 'Could not delete the transaction.');
+        await loadTransactions();
+        showTxStatus('Transaction deleted.', false);
+    } catch (error) {
+        console.error(error);
+        showTxStatus(error.message, true);
+    }
+};
+
+loadTransactions();
+// ==================== STUDENT PORTAL: TRANSACTIONS JS END ===================
 
 // ==================== FEATURE 02: ANNOUNCEMENTS JS START ====================
 // Talks to api/announcementapi. Start it with: dotnet run (port 5003).
-const ANNOUNCEMENT_API = 'http://localhost:5003/api/announcements';
+const ANNOUNCEMENT_API = `${PORTAL_API}/announcements`;
 
 // Which announcements this student has read stays in the browser, per student.
 const announceReadKey = `studentPortalAnnouncementsRead:${studentId}`;
@@ -54,10 +144,6 @@ function showAnnounceStatus(text, isError){
     box.classList.toggle('error', Boolean(isError));
 }
 
-function escapeHtml(value){
-    return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
 async function loadAnnouncements(){
     showAnnounceStatus('Loading announcements…', false);
     try {
@@ -69,7 +155,7 @@ async function loadAnnouncements(){
     } catch (error) {
         console.error(error);
         announcements = [];
-        showAnnounceStatus('Could not load announcements. Start api/announcementapi with dotnet run.', true);
+        showAnnounceStatus('Could not load announcements. Make sure api/accountapi is running (dotnet run).', true);
     }
     renderAnnouncements();
 }
@@ -119,53 +205,219 @@ window.addEventListener('hashchange', () => { if (location.hash === '#announceme
 loadAnnouncements();
 // ==================== FEATURE 02: ANNOUNCEMENTS JS END ======================
 
-
-// ============================================================
-// PART B: ROUTING TITLES
-// In the routing block, replace the `const titles=...` line with:
-// ============================================================
-// const titles={'#student-portal':'Student Portal','#feature-02':'Announcements','#feature-03':'Feature 03','#feature-04':'Feature 04'};
-
-
-// ============================================================
-// PART C (optional): RENAME TWO COMMENTS
-// Your Transactions code belongs to Feature 01, not Feature 02, so rename
-// "FEATURE 02: TRANSACTIONS JS START/END" to "STUDENT PORTAL: TRANSACTIONS JS START/END".
-// ============================================================
-// ==================== FEATURE 02: TRANSACTIONS JS END =======================
-
 // ==================== STUDENT PORTAL: GRADES JS START =======================
-// Fictional showcase data only. These subjects were created for this demo and
-// are not copied from the visual reference. Replace this object with API data later.
-const gradeData = {
- first:[
-  ['CS101','Introduction to Computing','A. Rivera',3,91,93,94,93],
-  ['MATH110','College Algebra','L. Mendoza',3,88,90,92,90],
-  ['ENG105','Academic Communication','C. Santos',3,94,92,95,94],
-  ['HUM120','Art and Society','R. Flores',3,90,91,93,91],
-  ['PE101','Movement and Wellness','D. Cruz',2,95,96,94,95]
- ],
- second:[
-  ['CS120','Programming Fundamentals','M. Villanueva',3,92,94,95,94],
-  ['STAT115','Introductory Statistics','E. Garcia',3,89,91,93,91],
-  ['ENG120','Professional Communication','N. Reyes',3,93,94,94,94],
-  ['SOC110','Culture and Community','P. Lim',3,91,90,92,91],
-  ['PE102','Fitness and Recreation','D. Cruz',2,96,95,97,96]
- ]
-};
-function renderGrades(){
- const rows=gradeData[document.getElementById('semesterSelect').value];
- document.getElementById('gradeRows').innerHTML=rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${Number(r[3]).toFixed(2)}</td><td>${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td><td>${r[7]}</td></tr>`).join('');
- const units=rows.reduce((sum,row)=>sum+row[3],0);
- const weighted=(column)=>(rows.reduce((sum,row)=>sum+row[column]*row[3],0)/units).toFixed(2);
- document.getElementById('gradeSummary').innerHTML=`<span>Total Units:</span><strong>${units.toFixed(2)}</strong><span>Prelim Weighted Average:</span><strong>${weighted(4)}</strong><span>Midterm Weighted Average:</span><strong>${weighted(5)}</strong><span>Final Weighted Average:</span><strong>${weighted(7)}</strong>`;
+// Loaded from the Grades table through api/accountapi (port 5002).
+const GRADES_API = `${PORTAL_API}/grades`;
+let gradeRecords = [];
+const semesterSelect = document.getElementById('semesterSelect');
+const showGradeStatus = addStatusLine('gradeStatus', semesterSelect.closest('.grades-section').querySelector('.table-wrap'));
+
+async function loadGrades(){
+    try {
+        const response = await fetch(`${GRADES_API}?studentId=${encodeURIComponent(studentId)}`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Request failed.');
+        gradeRecords = data.grades;
+        showGradeStatus('', false);
+    } catch (error) {
+        console.error(error);
+        gradeRecords = [];
+        showGradeStatus('Could not load grades. Make sure api/accountapi is running (dotnet run).', true);
+    }
+    renderGrades();
 }
-document.getElementById('semesterSelect').onchange=renderGrades;
-renderGrades();
+
+function renderGrades(){
+    const rows = gradeRecords.filter(g => g.semester === semesterSelect.value);
+    const cell = value => value == null ? '—' : value;
+    document.getElementById('gradeRows').innerHTML = rows.length
+        ? rows.map((g, i) => `<tr><td>${i+1}</td><td>${escapeHtml(g.subjectCode)}</td><td>${escapeHtml(g.subjectName)}</td><td>${escapeHtml(g.instructor)}</td><td>${Number(g.units).toFixed(2)}</td><td>${cell(g.prelim)}</td><td>${cell(g.midterm)}</td><td>${cell(g.finals)}</td><td>${cell(g.finalRating)}</td></tr>`).join('')
+        : '<tr><td colspan="9" class="empty-cell">No grades recorded for this semester.</td></tr>';
+
+    const units = rows.reduce((sum, g) => sum + g.units, 0);
+    // Weighted by units, counting only subjects that already have that grade.
+    const weighted = key => {
+        const graded = rows.filter(g => g[key] != null);
+        const u = graded.reduce((sum, g) => sum + g.units, 0);
+        return u ? (graded.reduce((sum, g) => sum + g[key] * g.units, 0) / u).toFixed(2) : '—';
+    };
+    document.getElementById('gradeSummary').innerHTML = `<span>Total Units:</span><strong>${units.toFixed(2)}</strong><span>Prelim Weighted Average:</span><strong>${weighted('prelim')}</strong><span>Midterm Weighted Average:</span><strong>${weighted('midterm')}</strong><span>Final Weighted Average:</span><strong>${weighted('finalRating')}</strong>`;
+}
+
+semesterSelect.onchange = renderGrades;
+loadGrades();
 // ==================== STUDENT PORTAL: GRADES JS END =========================
 
+// ==================== FEATURE 03: CLASS SCHEDULE JS START ====================
+// Talks to api/accountapi (port 5002). Uses helpers defined in app.js.
+(function () {
+    const SCHEDULE_API = `${PORTAL_API}/schedule`;
+    const DAYS = [['Mon', 'Monday'], ['Tue', 'Tuesday'], ['Wed', 'Wednesday'], ['Thu', 'Thursday'], ['Fri', 'Friday'], ['Sat', 'Saturday']];
+    let entries = [];
+
+    const form = document.getElementById('scheduleForm');
+    const showStatus = addStatusLine('scheduleStatus', form);
+
+    const minutes = value => { const [h, m] = value.split(':').map(Number); return h * 60 + m; };
+    const time12 = value => {
+        const [h, m] = value.split(':').map(Number);
+        return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+    };
+
+    async function loadSchedule() {
+        try {
+            const response = await fetch(`${SCHEDULE_API}?studentId=${encodeURIComponent(studentId)}`);
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Request failed.');
+            entries = data.entries;
+            showStatus('', false);
+        } catch (error) {
+            console.error(error);
+            entries = [];
+            showStatus('Could not load your schedule. Make sure api/accountapi is running (dotnet run).', true);
+        }
+        renderSchedule();
+    }
+
+    function renderSchedule() {
+        document.getElementById('weekBoard').innerHTML = DAYS.map(([key, label]) => {
+            const items = entries.filter(e => e.day === key);
+            const cards = items.length
+                ? items.map(e => `<article class="class-card">
+                        <strong>${escapeHtml(e.subjectCode)}</strong>
+                        <span>${escapeHtml(e.subjectName)}</span>
+                        <span class="class-time">${time12(e.start)} – ${time12(e.end)}</span>
+                        ${e.room ? `<span>Room: ${escapeHtml(e.room)}</span>` : ''}
+                        ${e.instructor ? `<span>${escapeHtml(e.instructor)}</span>` : ''}
+                        <button type="button" class="action-btn" data-delete-class="${e.id}">Remove</button>
+                    </article>`).join('')
+                : '<p class="empty-day">No classes</p>';
+            return `<div class="day-col"><h3>${label}</h3>${cards}</div>`;
+        }).join('');
+
+        const totalMinutes = entries.reduce((sum, e) => sum + (minutes(e.end) - minutes(e.start)), 0);
+        document.getElementById('scheduleSummary').innerHTML =
+            `<span>Class meetings per week:</span><strong>${entries.length}</strong>` +
+            `<span>Total hours per week:</span><strong>${(totalMinutes / 60).toFixed(1)}</strong>`;
+    }
+
+    form.onsubmit = async event => {
+        event.preventDefault();
+        const start = document.getElementById('scStart').value;
+        const end = document.getElementById('scEnd').value;
+        if (minutes(end) <= minutes(start)) {
+            showStatus('End time must be after the start time.', true);
+            return;
+        }
+        const button = form.querySelector('button[type="submit"]');
+        const body = {
+            studentId,
+            subjectCode: document.getElementById('scCode').value.trim(),
+            subjectName: document.getElementById('scName').value.trim(),
+            instructor: document.getElementById('scInstructor').value.trim(),
+            room: document.getElementById('scRoom').value.trim(),
+            day: document.getElementById('scDay').value,
+            start,
+            end
+        };
+        button.disabled = true;
+        try {
+            const response = await fetch(SCHEDULE_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.message || 'Could not save the class.');
+            form.reset();
+            await loadSchedule();
+            showStatus('Class added.', false);
+        } catch (error) {
+            console.error(error);
+            showStatus(error.message === 'Failed to fetch'
+                ? 'Could not reach the server. Make sure api/accountapi is running (dotnet run).'
+                : error.message, true);
+        } finally {
+            button.disabled = false;
+        }
+    };
+
+    document.getElementById('weekBoard').onclick = async event => {
+        const button = event.target.closest('[data-delete-class]');
+        if (!button || !confirm('Remove this class from your schedule?')) return;
+        try {
+            const response = await fetch(`${SCHEDULE_API}/${button.dataset.deleteClass}?studentId=${encodeURIComponent(studentId)}`, { method: 'DELETE' });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.message || 'Could not remove the class.');
+            await loadSchedule();
+            showStatus('Class removed.', false);
+        } catch (error) {
+            console.error(error);
+            showStatus(error.message, true);
+        }
+    };
+
+    window.addEventListener('hashchange', () => { if (location.hash === '#schedule') loadSchedule(); });
+    loadSchedule();
+})();
+// ==================== FEATURE 03: CLASS SCHEDULE JS END ======================
+
+// ==================== FEATURE 04: STATEMENT OF ACCOUNT JS START ==============
+// Talks to api/accountapi (port 5002). Uses helpers defined in app.js.
+(function () {
+    const STATEMENT_API = `${PORTAL_API}/statement`;
+    const status = document.getElementById('stStatus');
+
+    function showStatus(text, isError) {
+        status.textContent = text;
+        status.classList.toggle('error', Boolean(isError));
+    }
+
+    document.getElementById('printStudent').textContent = `${String(student.name || 'Student').toUpperCase()} · ${studentId}`;
+
+    async function loadStatement() {
+        showStatus('Loading statement…', false);
+        try {
+            const response = await fetch(`${STATEMENT_API}?studentId=${encodeURIComponent(studentId)}`);
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Request failed.');
+            showStatus('', false);
+            renderStatement(data);
+        } catch (error) {
+            console.error(error);
+            document.getElementById('statementCards').innerHTML = '';
+            document.getElementById('statementRows').innerHTML = '<tr><td colspan="6" class="empty-cell">No statement to show.</td></tr>';
+            showStatus('Could not load the statement. Make sure api/accountapi is running (dotnet run).', true);
+        }
+    }
+
+    function renderStatement(data) {
+        const t = data.totals;
+        const state = t.balance > 0 ? 'due' : (t.balance < 0 ? 'credit' : 'clear');
+        const label = t.balance > 0 ? 'Balance due' : (t.balance < 0 ? 'Overpaid' : 'Fully paid');
+
+        document.getElementById('statementCards').innerHTML =
+            `<div class="stat-card"><span>Total assessed</span><strong>${peso(t.assessed)}</strong></div>` +
+            `<div class="stat-card"><span>Tuition payments</span><strong>${peso(t.paid)}</strong></div>` +
+            `<div class="stat-card balance-${state}"><span>${label}</span><strong>${peso(Math.abs(t.balance))}</strong></div>` +
+            `<div class="stat-card"><span>Non-school payments</span><strong>${peso(t.nonSchool)}</strong></div>`;
+
+        document.getElementById('statementRows').innerHTML = data.ledger.length
+            ? data.ledger.map(l => `<tr>
+                    <td>${formatDate(l.date)}</td>
+                    <td>${escapeHtml(l.description)}</td>
+                    <td><span class="type-badge">${escapeHtml(l.kind)}</span></td>
+                    <td>${l.charge ? peso(l.charge) : '—'}</td>
+                    <td>${l.payment ? peso(l.payment) : '—'}</td>
+                    <td>${peso(l.balance)}</td>
+                </tr>`).join('')
+            : '<tr><td colspan="6" class="empty-cell">No charges or payments yet.</td></tr>';
+    }
+
+    document.getElementById('printStatement').onclick = () => window.print();
+
+    window.addEventListener('hashchange', () => { if (location.hash === '#statement-of-account') loadStatement(); });
+    loadStatement();
+})();
+// ==================== FEATURE 04: STATEMENT OF ACCOUNT JS END ================
+
 // ==================== FEATURE ROUTING START =================================
-const titles={'#student-portal':'Student Portal','#announcements':'Announcements','#feature-03':'Feature 03','#feature-04':'Feature 04'};
-function route(){ const hash=titles[location.hash]?location.hash:'#student-portal'; document.querySelectorAll('.feature-section').forEach(s=>s.classList.toggle('active-section','#'+s.id===hash)); document.querySelectorAll('.sidebar nav a').forEach(a=>a.classList.toggle('active',a.getAttribute('href')===hash)); document.getElementById('pageTitle').textContent=titles[hash]; }
+const titles={'#student-portal':'Student Portal','#announcements':'Announcements','#schedule':'Class Schedule','#statement-of-account':'Statement of Account'};function route(){ const hash=titles[location.hash]?location.hash:'#student-portal'; document.querySelectorAll('.feature-section').forEach(s=>s.classList.toggle('active-section','#'+s.id===hash)); document.querySelectorAll('.sidebar nav a').forEach(a=>a.classList.toggle('active',a.getAttribute('href')===hash)); document.getElementById('pageTitle').textContent=titles[hash]; }
 window.addEventListener('hashchange',route); route();
 // ==================== FEATURE ROUTING END ===================================

@@ -10,13 +10,6 @@
 .dashboard-grid{display:grid;grid-template-columns:360px 1fr;gap:25px;margin-top:18px}.profile-card{border:1px solid #e1e4e8;background:#f4f6f9;overflow:hidden;position:relative;min-height:405px}.campus-photo{height:155px;background:linear-gradient(135deg,#1686ca,#83b6d2 55%,#e5bd79);display:grid;place-items:center}.campus-placeholder{font-weight:800;letter-spacing:4px;color:#fff;text-shadow:0 1px 3px #333}.profile-avatar{position:absolute;top:125px;left:50%;transform:translateX(-50%);width:100px;height:100px;border-radius:50%;background:#d5d7dc;border:8px solid #f4f6f9;display:grid;place-items:center;font-size:34px;font-weight:700;color:#fff}.profile-copy{text-align:center;padding:68px 24px 24px;display:flex;flex-direction:column;gap:8px}.profile-copy h2{margin:0;font-size:19px}.profile-copy p{margin:0;font-size:13px;line-height:1.5}.profile-copy strong{margin-top:8px;font-size:13px}.profile-copy span{font-size:12px;color:#626b80}.dashboard-actions{display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));align-content:start;gap:15px;padding-top:16px}.dashboard-tile{position:relative;border:0;border-radius:4px;background:#20beb9;color:#fff;text-align:left;min-height:76px;padding:15px 65px 15px 17px;cursor:pointer;box-shadow:0 3px 8px #00000012}.dashboard-tile strong,.dashboard-tile span{display:block}.dashboard-tile strong{font-size:17px}.dashboard-tile span{font-size:13px;margin-top:3px}.dashboard-tile b{position:absolute;right:18px;top:17px;font-size:32px}.muted-tile{opacity:.72;cursor:default}
 /* ==================== FEATURE 01: STUDENT INFO CSS END ==================== */
 
-/* ==================== FEATURE 02: ANNOUNCEMENTS CSS START ================== */
-/* ============================================================
-   In style.css, replace the whole block from
-   "FEATURE 02: ANNOUNCEMENTS CSS START" to "FEATURE 02: ANNOUNCEMENTS CSS END"
-   with everything below.
-   ============================================================ */
-
 /* ==================== SHARED TABLE / FORM STYLES START ==================== */
 /* Used by Feature 01 (Transactions and Grades). Keep these. */
 .transaction-form{display:grid;grid-template-columns:2fr 1fr 1.2fr 1.2fr;gap:14px;margin:25px 0}
@@ -49,18 +42,62 @@
 .announce-card.unread{border-left-color:#20beb9;background:#f7fcfc}
 .announce-meta{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:8px;font-size:12px;color:#626b80}
 .announce-card h2{margin:0 0 8px;font-size:17px}
-.announce-card p{margin:0 0 14px;line-height:1.55;max-width:75ch}
+.announce-card p{margin:0 0 14px;line-height:1.55;max-width:150ch}
 .pin-tag{font-weight:700;color:#17213a}
 @media(max-width:700px){.feature-heading-row{flex-direction:column;align-items:stretch}}
 /* ==================== FEATURE 02: ANNOUNCEMENTS CSS END ==================== */
 
-/* ==================== FEATURE 03: GRADES CSS START ======================== */
+/* =========================== GRADES CSS START =============================== */
 .grades-shell{display:grid;grid-template-columns:375px 1fr;gap:25px}.grade-profile{min-height:500px}.grade-content{min-width:0}.grade-toolbar{display:flex;align-items:center;gap:9px;margin:16px 0 64px 12px}.grade-toolbar label{font-size:12px;font-weight:700}.grade-toolbar select{padding:7px 30px 7px 9px;font-size:12px;border-color:#20beb9;box-shadow:0 0 0 2px #20beb91a}.grade-table{font-size:12px}.grade-summary{display:grid;grid-template-columns:230px 90px;gap:7px 5px;margin:22px 0 0 40px;font-size:13px}.grade-summary strong{font-weight:400}
-/* ==================== FEATURE 03: GRADES CSS END ========================== */
+/* =========================== GRADES CSS END ================================= */
 
-/* ==================== FEATURE 04 CSS PLACEHOLDER START ==================== */
-/* Add Feature 04 CSS here. */
-/* ==================== FEATURE 04 CSS PLACEHOLDER END ====================== */
+/* ==================== FEATURE 03: CLASS SCHEDULE CSS START ==================== */
+.schedule-form{display:grid;grid-template-columns:1fr 2fr 1.5fr 1fr;gap:14px;margin:25px 0}
+.schedule-form label{display:grid;gap:7px;font-size:12px;font-weight:700}
+.schedule-form input,.schedule-form select{border:1px solid #ccd1d8;border-radius:5px;padding:10px;background:#fff;width:100%}
+.add-schedule{align-self:end}
+
+.week-board{display:grid;grid-template-columns:repeat(6,minmax(160px,1fr));gap:12px;overflow-x:auto;padding-bottom:6px}
+.day-col{background:#f7f9fb;border:1px solid #e1e4e8;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:140px}
+.day-col h3{margin:0 0 4px;font-size:14px;color:#17213a;border-bottom:2px solid #20beb9;padding-bottom:6px}
+.class-card{background:#fff;border:1px solid #e1e4e8;border-left:4px solid #20beb9;padding:10px;display:flex;flex-direction:column;gap:4px;font-size:12px;color:#626b80}
+.class-card strong{font-size:13px;color:#17213a}
+.class-time{font-weight:700;color:#12807b}
+.class-card .action-btn{align-self:flex-start;margin-top:6px}
+.empty-day{margin:0;font-size:12px;color:#888}
+
+.schedule-summary{display:grid;grid-template-columns:230px 90px;gap:7px 5px;margin:22px 0 0;font-size:13px}
+.schedule-summary strong{font-weight:700}
+/* ==================== FEATURE 03: CLASS SCHEDULE CSS END ====================== */
+
+/* ==================== FEATURE 04: STATEMENT OF ACCOUNT CSS START ============== */
+.statement-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0}
+.stat-card{border:1px solid #e1e4e8;border-top:4px solid #d5d9e0;background:#fff;padding:16px;display:flex;flex-direction:column;gap:8px}
+.stat-card span{font-size:12px;color:#626b80}
+.stat-card strong{font-size:20px}
+.stat-card.balance-due{border-top-color:#c0392b}
+.stat-card.balance-due strong{color:#a32929}
+.stat-card.balance-clear,.stat-card.balance-credit{border-top-color:#20beb9}
+.stat-card.balance-clear strong,.stat-card.balance-credit strong{color:#12807b}
+.statement-note{margin:18px 0 0;font-size:12px;color:#626b80;max-width:200ch;line-height:1.5}
+.print-only{display:none}
+/* ==================== FEATURE 04: STATEMENT OF ACCOUNT CSS END ================ */
+
+@media(max-width:950px){
+    .schedule-form{grid-template-columns:1fr 1fr}
+    .statement-cards{grid-template-columns:1fr 1fr}
+}
+@media(max-width:700px){
+    .schedule-form,.statement-cards{grid-template-columns:1fr}
+}
+
+/* Printing the statement: show only the statement itself. */
+@media print{
+    .sidebar,.topbar,footer,.action-btn{display:none!important}
+    .page{margin-left:0!important}
+    .print-only{display:block;font-weight:700;margin:12px 0}
+    .panel{border:0;padding:0}
+}
 
 @media(max-width:950px){.dashboard-grid,.grades-shell,.auth-shell{grid-template-columns:1fr}.dashboard-actions{grid-template-columns:1fr}.transaction-form{grid-template-columns:1fr 1fr}.tx-notes{grid-column:span 1}.grade-toolbar{margin-bottom:25px}.form-grid{grid-template-columns:1fr}}
 @media(max-width:700px){.sidebar{width:78px}.brand-text,.nav-text{display:none}.page{margin-left:78px}.sidebar nav a,.logout,.brand{justify-content:center}.content{padding:12px}.transaction-form{grid-template-columns:1fr}.dashboard-panel,.panel,.grades-shell{padding:16px}.topbar{padding:0 16px}}

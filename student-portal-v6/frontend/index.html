@@ -17,15 +17,9 @@
         <nav>
             <!-- FEATURE 01 is the complete Student Portal page below. -->
             <a href="#student-portal" class="active"><span class="nav-number">01</span><span class="nav-text">Student Portal</span></a>
-
-            <!-- ==================== FUTURE SIDEBAR FEATURES START ====================
-                 Replace these placeholders when the next APIs/features are added.
-                 Their backend folders are /api/Feature02API, Feature03API, Feature04API.
-                 ====================================================================== -->
             <a href="#announcements"><span class="nav-number">02</span><span class="nav-text">Announcements</span></a>
-            <a href="#feature-03"><span class="nav-number">03</span><span class="nav-text">Feature 03</span></a>
-            <a href="#feature-04"><span class="nav-number">04</span><span class="nav-text">Feature 04</span></a>
-            <!-- ==================== FUTURE SIDEBAR FEATURES END ====================== -->
+            <a href="#schedule"><span class="nav-number">03</span><span class="nav-text">Class Schedule</span></a>
+            <a href="#statement-of-account"><span class="nav-number">04</span><span class="nav-text">Statement of Account</span></a>
         </nav>
 
         <button class="logout" id="logoutBtn"><span>↪</span><span class="nav-text">Logout</span></button>
@@ -64,9 +58,7 @@
                 <!-- ---------------- STUDENT INFORMATION END ------------------ -->
 
                 <!-- ---------------- TRANSACTIONS START -------------------------
-                     Currently stored in browser localStorage for demonstration.
-                     Add a Transactions API later inside an appropriate API folder.
-                     Replace the marked localStorage code in app.js with fetch calls.
+                     Saved in the Transactions table through api/accountapi (port 5002).
                      ------------------------------------------------------------ -->
                 <div class="panel portal-subsection">
                     <div class="section-heading">
@@ -94,8 +86,8 @@
                 <!-- ---------------- TRANSACTIONS END --------------------------- -->
 
                 <!-- ---------------- GRADES START -------------------------------
-                     Example data only. Replace gradeData in app.js with a future
-                     grades API response when that backend is implemented.
+                     Loaded from the Grades table through api/accountapi (port 5002).
+                     Currently shows placeholder demo grades (see GradesController.cs).
                      ------------------------------------------------------------ -->
                 <div class="panel portal-subsection grades-section">
                     <div class="section-heading grade-heading-row">
@@ -121,11 +113,7 @@
             </section>
             <!-- ==================== FEATURE 01: STUDENT PORTAL END =================== -->
 
-            <!-- ==================== FEATURE 02 PLACEHOLDER START =====================
-                 Add Feature 02's complete HTML here when its purpose is decided.
-                 Backend placeholder: /api/Feature02API/
-                 Add matching JS/CSS only inside their marked placeholder blocks.
-                 ====================================================================== -->
+            <!-- ==================== FEATURE 02: ANNOUNCEMENTS START ================== -->
             <section id="announcements" class="feature-section">
                 <div class="panel">
                     <div class="section-heading feature-heading-row">
@@ -142,21 +130,72 @@
                     <div class="announce-list" id="announceList"></div>
                  </div>
             </section>
-            <!-- ==================== FEATURE 02 PLACEHOLDER END ======================= -->
+            <!-- ==================== FEATURE 02: ANNOUNCEMENTS END ==================== -->
 
-            <!-- ==================== FEATURE 03 PLACEHOLDER START =====================
-                 Add Feature 03's complete HTML here when its purpose is decided.
-                 Backend placeholder: /api/Feature03API/
+            <!-- ==================== FEATURE 03: CLASS SCHEDULE START =================
+                 Talks to api/accountapi (port 5002). JS is in schedule.js.
                  ====================================================================== -->
-            <section id="feature-03" class="feature-section"><div class="panel placeholder"><h1>Feature 03</h1><p>Reserved for a future portal feature/API.</p></div></section>
-            <!-- ==================== FEATURE 03 PLACEHOLDER END ======================= -->
+            <section id="schedule" class="feature-section">
+                <div class="panel">
+                    <div class="section-heading">
+                        <h1>Class Schedule</h1>
+                        <p>Add your weekly classes. Overlapping times are blocked automatically.</p>
+                    </div>
 
-            <!-- ==================== FEATURE 04 PLACEHOLDER START =====================
-                 Add Feature 04's complete HTML here when its purpose is decided.
-                 Backend placeholder: /api/Feature04API/
+                    <form id="scheduleForm" class="schedule-form">
+                        <label>Subject code<input id="scCode" required maxlength="20" placeholder="e.g. IT101"></label>
+                        <label>Subject name<input id="scName" required maxlength="100" placeholder="e.g. Introduction to Computing"></label>
+                        <label>Instructor<input id="scInstructor" maxlength="100" placeholder="Optional"></label>
+                        <label>Room<input id="scRoom" maxlength="30" placeholder="e.g. Rm 204"></label>
+                        <label>Day
+                            <select id="scDay">
+                                <option value="Mon">Monday</option>
+                                <option value="Tue">Tuesday</option>
+                                <option value="Wed">Wednesday</option>
+                                <option value="Thu">Thursday</option>
+                                <option value="Fri">Friday</option>
+                                <option value="Sat">Saturday</option>
+                            </select>
+                        </label>
+                        <label>Start<input id="scStart" type="time" required value="08:00"></label>
+                        <label>End<input id="scEnd" type="time" required value="09:30"></label>
+                        <button class="primary add-schedule" type="submit">Add Class</button>
+                    </form>
+
+                    <div class="week-board" id="weekBoard"></div>
+                    <div class="schedule-summary" id="scheduleSummary"></div>
+                </div>
+            </section>
+            <!-- ==================== FEATURE 03: CLASS SCHEDULE END =================== -->
+
+            <!-- ==================== FEATURE 04: STATEMENT OF ACCOUNT START ===========
+                 Talks to api/accountapi (port 5002). JS is in statement.js.
                  ====================================================================== -->
-            <section id="feature-04" class="feature-section"><div class="panel placeholder"><h1>Feature 04</h1><p>Reserved for a future portal feature/API.</p></div></section>
-            <!-- ==================== FEATURE 04 PLACEHOLDER END ======================= -->
+            <section id="statement-of-account" class="feature-section">
+                <div class="panel">
+                    <div class="section-heading feature-heading-row">
+                        <div>
+                            <h1>Statement of Account</h1>
+                            <p>Assessed fees and your recorded tuition payments.</p>
+                        </div>
+                        <button class="action-btn" id="printStatement" type="button">Print statement</button>
+                    </div>
+
+                    <p class="print-only" id="printStudent"></p>
+                    <p class="form-message" id="stStatus" role="status"></p>
+
+                    <div class="statement-cards" id="statementCards"></div>
+
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Date</th><th>Description</th><th>Type</th><th>Charge</th><th>Payment</th><th>Balance</th></tr></thead>
+                            <tbody id="statementRows"></tbody>
+                        </table>
+                    </div>
+                    <p class="statement-note">Payments are the transactions you recorded as “Tuition Fee” under General Transactions. “Non-School Fee” entries are shown above but do not change your balance.</p>
+                </div>
+            </section>
+            <!-- ==================== FEATURE 04: STATEMENT OF ACCOUNT END ============= -->
         </main>
         <footer>Offline Student Portal · 2026</footer>
     </div>
